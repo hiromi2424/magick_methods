@@ -17,6 +17,14 @@ class MagickMethodsBehaviorMockModel extends Model {
 	public function byUserDefined() {
 		return array($this->escapeField('specific_field') => 'value!');
 	}
+
+	public function byMultiParameters() {
+		return array(
+			'hoge' => 'piyo',
+			'fuga' => 'moge',
+			'untara' => 1,
+		);
+	}
 }
 
 class MagickMethodBehaviorTestCase extends CakeTestCase {
@@ -156,6 +164,14 @@ class MagickMethodBehaviorTestCase extends CakeTestCase {
 		$result = $this->Model->findByUserDefined();
 		$expected = array('first', array('conditions' => array(
 			$this->Model->escapeField('specific_field') => 'value!',
+		)));
+		$this->assertEqual($expected, $result);
+
+		$result = $this->Model->findByMultiParameters();
+		$expected = array('first', array('conditions' => array(
+			'hoge' => 'piyo',
+			'fuga' => 'moge',
+			'untara' => 1,
 		)));
 		$this->assertEqual($expected, $result);
 

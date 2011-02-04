@@ -130,8 +130,7 @@ class MagickMethodsBehavior extends ModelBehavior {
 
 			if ($Model->hasMethod($callback)) {
 
-				list($field, $value) = each($Model->$callback());
-				$scopes[$field] = $value;
+				$scopes = Set::merge($scopes, $Model->$callback());
 
 			} else {
 
