@@ -1,36 +1,11 @@
 <?php
 
-class MagickMethodsBehaviorMockModel extends Model {
+App::uses('MagickMethodsBehaviorMockModel', 'MagickMethods.TestSuite/Mock');
 
-	public $useTable = false;
-	public $actsAs = array('MagickMethods.MagickMethods');
-
-	public function find() {
-		$args = func_get_args();
-		return $args;
-	}
-
-	public function getInsertId() {
-		return 2;
-	}
-
-	public function byUserDefined() {
-		return array($this->escapeField('specific_field') => 'value!');
-	}
-
-	public function byMultiParameters() {
-		return array(
-			'hoge' => 'piyo',
-			'fuga' => 'moge',
-			'untara' => 1,
-		);
-	}
-}
-
-class MagickMethodBehaviorTestCase extends CakeTestCase {
+class MagickMethodsBehaviorTest extends CakeTestCase {
 
 	public function setup() {
-		$this->Model = ClassRegistry::init('MagickMethodsBehaviorMockModel');
+		$this->Model = new MagickMethodsBehaviorMockModel;
 	}
 
 	public function tearDown() {
