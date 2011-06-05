@@ -15,11 +15,11 @@ Magick method is exactly slow but it is very suitable to develop rapidly.
 
 in your plugins directory,
 
-	git clone git://github.com/hiromi2424/magick_methods.git
+	git clone git://github.com/hiromi2424/magick_methods.git MagickMethods
 
 or in current directory of your repository,
 
-	git submodule add git://github.com/hiromi2424/magick_methods.git plugins/magick_methods
+	git submodule add git://github.com/hiromi2424/magick_methods.git plugins/MagickMethods
 
 
 ## Usage
