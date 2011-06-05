@@ -7,10 +7,19 @@ class MagickMethodsBehavior extends ModelBehavior {
 	protected $_findMap = array('/^find(.+)$/' => '_findMagick');
 	protected $_scopeMap = array('/^scope(.+)$/' => '_scopeMagick');
 
-	protected $_callbackPrefix = 'by';
+	public static $defaultSettings = array(
+		'callbackPrefix' => 'by',
+		'associations' => array(
+			'hasOne',
+			'belongsTo',
+			'hasMany',
+			'hasAndBelongsToMany',
+		),
+	);
 
 	public function setup($Model, $config = array()) {
 		$this->mapMethods = array_merge($this->_findMap, $this->_scopeMap);
+		$this->settings[$Model->alias] = Set::merge(self::$defaultSettings, $config);
 	}
 
 	public function _findMagick($Model) {
@@ -126,7 +135,7 @@ class MagickMethodsBehavior extends ModelBehavior {
 		foreach ($fields as $field) {
 
 			$Field = Inflector::camelize($field);
-			$callback = $this->_callbackPrefix . $Field;
+			$callback = $this->settings[$Model->alias]['callbackPrefix'] . $Field;
 
 			if ($Model->hasMethod($callback)) {
 
@@ -141,7 +150,11 @@ class MagickMethodsBehavior extends ModelBehavior {
 				$value = $args[$offset];
 				$offset++;
 
-				$scopes[$Model->escapeField($field)] = $value;
+				if ($Model->hasField($field, true) || !($assocField = $this->_retrieveAssociatedField($Model, $field))) {
+					$scopes[$Model->escapeField($field)] = $value;
+				} else {
+					$scopes[$assocField] = $value;
+				}
 
 			}
 
@@ -156,6 +169,30 @@ class MagickMethodsBehavior extends ModelBehavior {
 
 		return Set::merge(array('conditions' => $criteria), $query);
 
+	}
+
+	protected function _retrieveAssociatedField($Model, $field) {
+		$parts = explode('_', $field);
+		$partsCount = count($parts);
+
+		foreach ($Model->getAssociated() as $alias => $assoc) {
+
+			if (in_array($assoc, $this->settings[$Model->alias]['associations'])) {
+				for ($i = 1; $i <= $partsCount; $i++) {
+					$search = Inflector::camelize(implode('_', array_slice($parts, 0, $i)));
+
+					if ($alias === $search) {
+						$field = implode('_', array_slice($parts, $i));
+						if ($Model->$alias->hasField($field, true)) {
+							return $Model->$alias->escapeField($field);
+						}
+					}
+				}
+			}
+
+		}
+
+		return false;
 	}
 
 	protected function _generatesOrCreteria($scopes, $operators) {

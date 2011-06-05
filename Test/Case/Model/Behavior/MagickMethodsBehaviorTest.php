@@ -1,11 +1,92 @@
 <?php
 
-App::uses('MagickMethodsBehaviorMockModel', 'MagickMethods.TestSuite/Mock');
+App::uses('Model', 'Model');
+
+class MagickMethodsBehaviorMockBase extends Model {
+
+	public $useTable = false;
+
+	public $hasField = true;
+
+	public function find() {
+		$args = func_get_args();
+		return $args;
+	}
+
+	/*
+	 * @override
+	 */
+	public function hasField() {
+		return $this->hasField;
+	}
+
+}
+
+
+class MagickMethodsBehaviorMockModel extends MagickMethodsBehaviorMockBase {
+
+	public $actsAs = array('MagickMethods.MagickMethods');
+
+	public $belongsTo = array(
+		'BelongsTo' => array(
+			'className' => 'MagickMethodsBehaviorMockBelongsTo',
+		),
+	);
+	public $hasOne = array(
+		'HasOne' => array(
+			'className' => 'MagickMethodsBehaviorMockHasOne',
+		),
+	);
+	public $hasMany = array(
+		'HasMany' => array(
+			'className' => 'MagickMethodsBehaviorMockHasMany',
+		),
+	);
+	public $hasAndBelongsToMany = array(
+		'Habtm' => array(
+			'className' => 'MagickMethodsBehaviorMockHabtm',
+		),
+	);
+
+	public function getInsertId() {
+		return 2;
+	}
+
+	public function byUserDefined() {
+		return array($this->escapeField('specific_field') => 'value!');
+	}
+
+	public function byMultiParameters() {
+		return array(
+			'hoge' => 'piyo',
+			'fuga' => 'moge',
+			'untara' => 1,
+		);
+	}
+
+}
+
+class MagickMethodsBehaviorMockHasOne extends MagickMethodsBehaviorMockBase {
+
+}
+
+class MagickMethodsBehaviorMockBelongsTo extends MagickMethodsBehaviorMockBase {
+
+}
+
+class MagickMethodsBehaviorMockHasMany extends MagickMethodsBehaviorMockBase {
+
+}
+
+class MagickMethodsBehaviorMockHabtm extends MagickMethodsBehaviorMockBase {
+
+}
+
 
 class MagickMethodsBehaviorTest extends CakeTestCase {
 
 	public function setup() {
-		$this->Model = new MagickMethodsBehaviorMockModel;
+		$this->Model = ClassRegistry::init('MagickMethodsBehaviorMockModel');
 	}
 
 	public function tearDown() {
@@ -160,6 +241,44 @@ class MagickMethodsBehaviorTest extends CakeTestCase {
 
 		$result = $this->Model->findUserFindType();
 		$expected = array('userfindtype', array());
+		$this->assertEqual($expected, $result);
+
+	}
+
+	public function testAssociatedField() {
+
+		$this->Model->hasField = false;
+
+		$result = $this->Model->findByBelongsToField('belongs to');
+		$expected = array('first', array('conditions' => array(
+			$this->Model->BelongsTo->escapeField('field') => 'belongs to',
+		)));
+		$this->assertEqual($expected, $result);
+
+		$result = $this->Model->findByHasOneField('has one');
+		$expected = array('first', array('conditions' => array(
+			$this->Model->HasOne->escapeField('field') => 'has one',
+		)));
+		$this->assertEqual($expected, $result);
+
+		$result = $this->Model->findByHasManyField('has many');
+		$expected = array('first', array('conditions' => array(
+			$this->Model->HasMany->escapeField('field') => 'has many',
+		)));
+		$this->assertEqual($expected, $result);
+
+		$result = $this->Model->findByHabtmField('has and belongs to many');
+		$expected = array('first', array('conditions' => array(
+			$this->Model->Habtm->escapeField('field') => 'has and belongs to many',
+		)));
+		$this->assertEqual($expected, $result);
+
+		$this->Model->BelongsTo->hasField = false;
+
+		$result = $this->Model->findByBelongsToField('belongs to');
+		$expected = array('first', array('conditions' => array(
+			$this->Model->escapeField('belongs_to_field') => 'belongs to',
+		)));
 		$this->assertEqual($expected, $result);
 
 	}
